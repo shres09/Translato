@@ -72,7 +72,7 @@ class _IndianState extends State<Indian> {
           backgroundColor: Colors.lightBlue[200],
           centerTitle: true,
           title: const Text(
-            'Translato',
+            'VIVEKA',
             style: TextStyle(
               letterSpacing: 2.0,
               fontSize: 24.0,

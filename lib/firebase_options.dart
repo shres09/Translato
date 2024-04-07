@@ -44,37 +44,37 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyDAeQCLosKKUk9OZNai4uOgDZVZ3wczo0o',
-    appId: '1:791812366023:web:da56927909681e2bbda8e2',
-    messagingSenderId: '791812366023',
-    projectId: 'translato-20d07',
-    authDomain: 'translato-20d07.firebaseapp.com',
-    storageBucket: 'translato-20d07.appspot.com',
+    apiKey: 'AIzaSyDWogQPWmLHWy-Ab0zudtya_7e1pYrnkhA',
+    appId: '1:925046371887:web:777fe6b615a477af4178da',
+    messagingSenderId: '925046371887',
+    projectId: 'translato-ac737',
+    authDomain: 'translato-ac737.firebaseapp.com',
+    storageBucket: 'translato-ac737.appspot.com',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyAwkypwAS4Wscsmd-ZTcxcDIPysvYQiMsI',
-    appId: '1:791812366023:android:f815096308e6fd8dbda8e2',
-    messagingSenderId: '791812366023',
-    projectId: 'translato-20d07',
-    storageBucket: 'translato-20d07.appspot.com',
+    apiKey: 'AIzaSyB9VgTwGNHHGYRmZSQvPaQcSCVoqWGd890',
+    appId: '1:925046371887:android:152769b41861469a4178da',
+    messagingSenderId: '925046371887',
+    projectId: 'translato-ac737',
+    storageBucket: 'translato-ac737.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBgEAFCfm3Aor-v7BL-tlUjnO-vKY9BBeo',
-    appId: '1:791812366023:ios:5a5289988b2d6223bda8e2',
-    messagingSenderId: '791812366023',
-    projectId: 'translato-20d07',
-    storageBucket: 'translato-20d07.appspot.com',
+    apiKey: 'AIzaSyCTtYmGaU1V67UoLvoZpiKcBUz6ECeCgLI',
+    appId: '1:925046371887:ios:c8080c2d64198d8b4178da',
+    messagingSenderId: '925046371887',
+    projectId: 'translato-ac737',
+    storageBucket: 'translato-ac737.appspot.com',
     iosBundleId: 'com.example.translato',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyBgEAFCfm3Aor-v7BL-tlUjnO-vKY9BBeo',
-    appId: '1:791812366023:ios:cb4aa4d4e542ff8abda8e2',
-    messagingSenderId: '791812366023',
-    projectId: 'translato-20d07',
-    storageBucket: 'translato-20d07.appspot.com',
+    apiKey: 'AIzaSyCTtYmGaU1V67UoLvoZpiKcBUz6ECeCgLI',
+    appId: '1:925046371887:ios:659953cf11deab064178da',
+    messagingSenderId: '925046371887',
+    projectId: 'translato-ac737',
+    storageBucket: 'translato-ac737.appspot.com',
     iosBundleId: 'com.example.translato.RunnerTests',
   );
 }

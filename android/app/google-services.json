@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "791812366023",
-    "project_id": "translato-20d07",
-    "storage_bucket": "translato-20d07.appspot.com"
+    "project_number": "925046371887",
+    "project_id": "translato-ac737",
+    "storage_bucket": "translato-ac737.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:791812366023:android:f815096308e6fd8dbda8e2",
+        "mobilesdk_app_id": "1:925046371887:android:152769b41861469a4178da",
         "android_client_info": {
           "package_name": "com.example.translato"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAwkypwAS4Wscsmd-ZTcxcDIPysvYQiMsI"
+          "current_key": "AIzaSyB9VgTwGNHHGYRmZSQvPaQcSCVoqWGd890"
         }
       ],
       "services": {

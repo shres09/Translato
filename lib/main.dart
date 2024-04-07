@@ -32,7 +32,12 @@ void main() async {
     '/data_curation' : (context) => const DataCuration(),
     '/foreign' : (context) => const Foreign(),
     '/indian' : (context) => const Indian(),
-    '/text_foreign' : (context) => const TextForeign(),
+    '/text_foreign': (context) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
+        final data = args['data'] as String;
+        final name = args['name'] as String;
+        return TextForeign(data: data, name: name);
+    },
     '/video_foreign' : (context) => const VideoForeign(),
     '/audio_foreign' : (context) => const AudioForeign(),
     '/text_indian' : (context) => const TextIndian(),

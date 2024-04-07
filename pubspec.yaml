@@ -36,6 +36,9 @@ dependencies:
   firebase_storage: ^11.6.5
   file_picker: ^6.1.1
   easy_pdf_viewer: ^1.0.7
+  http: ^1.2.0
+  http_parser: ^4.0.2
+  document_viewer: ^0.0.1
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
