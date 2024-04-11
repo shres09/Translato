@@ -103,7 +103,7 @@ class _TextForeignState extends State<TextForeign> {
               onTap: () {
                 getDoc();
                 if(outputUrl==""){
-                  showToast(message: "No output file was generated!");
+                  showToast(message: "Error playing audio!");
                 }else{
                   Navigator.of(context).push(MaterialPageRoute(builder: (context) => PdfViewerScreen(pdfUrl: outputUrl!)));
                 }

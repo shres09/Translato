@@ -1,13 +1,63 @@
+import 'package:audioplayers/audioplayers.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:translato/global/common/toast.dart';
 
 class AudioForeign extends StatefulWidget {
-  const AudioForeign({super.key});
+
+  final String data;
+  final String name;
+  const AudioForeign({Key? key, required this.data, required this.name})
+      : super(key: key);
 
   @override
   State<AudioForeign> createState() => _AudioForeignState();
 }
 
 class _AudioForeignState extends State<AudioForeign> {
+  String outputUrl = "";
+  String fileName = "None";
+  FirebaseAuth auth = FirebaseAuth.instance;
+
+  @override
+  void initState() {
+    super.initState();
+    getDoc(); // Fetch data immediately upon widget initialization
+  }
+
+  void getDoc() async {
+    // Handle potential null arguments using null-safe operators
+    final data = widget.data;
+    final name = widget.name;
+
+    if (data == null || name == null) {
+      // Handle the case where arguments are missing (e.g., show error message)
+      print('Error: Missing arguments in TextForeign');
+      return;
+    }
+
+    try {
+      final docRef = store.collection("User_Documents")
+          .doc(auth.currentUser!.email)
+          .collection("Foreign_Translation_Audio")
+          .doc(data);
+      final docSnapshot = await docRef.get();
+
+      if (docSnapshot.exists) {
+        outputUrl = docSnapshot.get('output');
+        fileName = name;
+        setState(() {});
+      } else {
+        print('Error: Document not found');
+      }
+    } on FirebaseException catch (e) {
+      print('Error fetching document: $e');
+    }
+  }
+
+  final FirebaseFirestore store = FirebaseFirestore.instance;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -41,7 +91,37 @@ class _AudioForeignState extends State<AudioForeign> {
                         height: 20.0,
                       ),
                       Center(
-                        child: Text('Audio File'),
+                        child: Column(
+                          children: [
+                            ElevatedButton(
+                                onPressed: () async {
+                                  getDoc();
+                                  if(outputUrl==""){
+                                    showToast(message: "Error playing audio!");
+                                  }else{
+                                    final player = AudioPlayer();
+                                    await player.play(UrlSource(outputUrl));
+                                  }
+                                },
+                                child: Text(
+                                    "play"
+                                )
+                            ),
+                            SizedBox(
+                              height: 10.0,
+                            ),
+                            Text(
+                              fileName,
+                              style: TextStyle(
+                                  fontSize: 12.0,
+                                  fontFamily: 'Poppins-Medium'
+                              ),
+                            ),
+                            SizedBox(
+                              height: 40.0,
+                            )
+                          ],
+                        ),
                       )
                     ])
             )
@@ -49,4 +129,5 @@ class _AudioForeignState extends State<AudioForeign> {
     );
   }
 }
+
 

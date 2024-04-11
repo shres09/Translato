@@ -13,6 +13,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:translato/global/common/toast.dart';
+import 'package:translato/pages/audio_foreign.dart';
 import 'package:translato/pages/text_foreign.dart';
 
 class Foreign extends StatefulWidget {
@@ -22,25 +23,6 @@ class Foreign extends StatefulWidget {
   State<Foreign> createState() => _ForeignState();
 }
 
-class Input {
-  late String filePath; // Store the file path instead of the file object
-  late String inputLanguage;
-  late String outputLanguage;
-
-  Input(io.File file, String inputLanguage, String outputLanguage) {
-    this.filePath = file.path; // Store the file path instead of the file object
-    this.inputLanguage = inputLanguage;
-    this.outputLanguage = outputLanguage;
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'file': filePath,
-      'inputLanguage': inputLanguage,
-      'outputLanguage': outputLanguage,
-    };
-  }
-}
 
 class _ForeignState extends State<Foreign> {
 
@@ -49,7 +31,8 @@ class _ForeignState extends State<Foreign> {
   List<Map<String, dynamic>> pdfs = [];
   String name = "output file - none";
   String lang = "fr";
-  var fileName = "None";
+  var fileName;
+  bool isSuccess = false;
   String? outputUrl = null;
   final List<String> languages = ['French', 'German', 'Portugese', 'Italian', 'Spanish', 'Dutch'];
   String selectedItem = "French";
@@ -57,11 +40,12 @@ class _ForeignState extends State<Foreign> {
   var outputFile ;
   var downloadLink;
   var docID;
-  Uri api = Uri.parse("https://f776-2401-4900-1cb9-9d7-d47a-6070-f9a3-33c.ngrok-free.app/translate/document/");
+  Uri api = Uri.parse("https://e7a3-2401-4900-1cb9-9e03-219e-b5c0-8a31-5c66.ngrok-free.app/translate/document/");
+  Uri audio_api = Uri.parse("https://1562-2401-4900-1cb9-9e03-219e-b5c0-8a31-5c66.ngrok-free.app/translate_and_speak/document/");
 
   Future<String> uploadPdf(String fileName, io.File file) async{
     String? user = auth.currentUser!.email;
-    final reference = FirebaseStorage.instance.ref().child("$user/Uploaded_documents/$fileName.pdf");
+    final reference = FirebaseStorage.instance.ref().child("$user/Foreign_Translation/Uploaded_documents/$fileName.pdf");
     final uploadTask = reference.putFile(file);
     await uploadTask.whenComplete(() {} );
     final downloadLink = await reference.getDownloadURL();
@@ -115,6 +99,9 @@ class _ForeignState extends State<Foreign> {
   }
 
   void translateDocument() async {
+    setState(() {
+      isSuccess = true;
+    });
     showToast(message: "Translating document!");
     var request = http.MultipartRequest("POST", api);
     request.files.add(await http.MultipartFile.fromPath(
@@ -133,7 +120,8 @@ class _ForeignState extends State<Foreign> {
       String? user = auth.currentUser?.email; // Access user information (adjust if needed)
       //String contentType = response.headers['Content-Type'] ?? 'application/octet-stream'; // Get file type from header
 
-      Reference ref = FirebaseStorage.instance.ref().child("$user/Output_documents/$fileName-$selectedItem.pdf");
+      var file = fileName.split(".docx")[0];
+      Reference ref = FirebaseStorage.instance.ref().child("$user/Foreign_Translation/Output_documents/$file-$selectedItem.pdf");
 
       UploadTask uploadTask = ref.putData(response.bodyBytes);
 
@@ -153,11 +141,73 @@ class _ForeignState extends State<Foreign> {
       docID = docRef.id;
 
 
+      setState(() {
+        isSuccess = false;
+      });
 
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => TextForeign(data: docID, name: fileName+"-"+selectedItem+".pdf"),
+          builder: (context) => TextForeign(data: docID, name: file+"-"+selectedItem+".pdf"),
+        ),
+      );
+    }else{
+      showToast(message: response.statusCode.toString());
+    }
+  }
+
+  void translateDocumentAudio() async {
+    setState(() {
+      isSuccess = true;
+    });
+    showToast(message: "Translating document!");
+    var request = http.MultipartRequest("POST", audio_api);
+    request.files.add(await http.MultipartFile.fromPath(
+      'file', // This is the key for the file parameter in your API
+      inputFile.path,
+      contentType: MediaType('audio', 'mp3'), // You may need to adjust the content type based on your API requirements
+    ));
+
+    // Add other parameters if needed
+    request.fields['source_language'] = 'en';
+    request.fields['target_language'] = setLanguage(selectedItem);
+
+    var streamedResponse = await request.send();
+    var response = await http.Response.fromStream(streamedResponse);
+    if(response.statusCode == 200){
+      showToast(message: "Success!");
+      final audioBytes = response.bodyBytes;
+      String? user = auth.currentUser?.email; // Access user information (adjust if needed)
+      //String contentType = response.headers['Content-Type'] ?? 'application/octet-stream'; // Get file type from header
+
+      var file = fileName.toString().split(".docx")[0];
+      Reference ref =  FirebaseStorage.instance.ref().child("$user/Foreign_Translation/Output_Audios/$file-$selectedItem.mp3");
+
+      UploadTask uploadTask = ref.putData(audioBytes);
+
+      // Handle completion and errors
+      await uploadTask.whenComplete(() => print('File uploaded to Firebase Storage'));
+      final outputLink = await ref.getDownloadURL();
+
+
+      uploadTask.snapshotEvents.listen((event) {
+        // Handle progress events
+        print(event.bytesTransferred / event.totalBytes);
+      });
+      DocumentReference docRef = await store.collection("User_Documents").doc(user.toString()).collection("Foreign_Translation_Audio").add({
+        "input": downloadLink,
+        "output": outputLink
+      });
+      docID = docRef.id;
+
+      setState(() {
+        isSuccess = false;
+      });
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => AudioForeign(data: docID, name: file+"-"+selectedItem+".mp3"),
         ),
       );
     }else{
@@ -325,7 +375,8 @@ class _ForeignState extends State<Foreign> {
                         child: Card(
                             color: Colors.lightBlue[100],
                             child: Center(
-                                child: Text(
+                                child: isSuccess ? CircularProgressIndicator(
+                                  color: Colors.white,) : Text(
                                   'Output',
                                   style: TextStyle(
                                       fontSize: 20.0,
@@ -388,7 +439,13 @@ class _ForeignState extends State<Foreign> {
                       ),
                       GestureDetector(
                         onTap: (){
-                          Navigator.pushNamed(context, '/audio_foreign');
+                          if(selectedItem == ""){
+                            showToast(message: "Select a language!");
+                          }else if(inputFile == null){
+                            showToast(message: "Upload a document!");
+                          }else{
+                            translateDocumentAudio();
+                          }
                         },
                         child: Container(
                           height: 55.0,
