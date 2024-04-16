@@ -6,8 +6,13 @@ import 'package:easy_pdf_viewer/easy_pdf_viewer.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:http_parser/http_parser.dart';
 import 'package:translato/global/common/toast.dart';
+import 'package:translato/pages/audio_indian.dart';
+import 'package:translato/pages/text_indian.dart';
 
 class Indian extends StatefulWidget {
   const Indian({super.key});
@@ -22,12 +27,22 @@ class _IndianState extends State<Indian> {
   FirebaseAuth auth = FirebaseAuth.instance;
   List<Map<String, dynamic>> pdfs = [];
   String name = "output file - none";
+  String lang = "fr";
+  var fileName;
+  bool isSuccess = false;
   String? outputUrl = null;
-  final List<String> languages = ['Sanskrit', 'Kannada', 'Tamil', 'Telugu', 'Hindi'];
-  String? selectedItem = 'Hindi';
+  final List<String> languages = ['Malayalam', 'Kannada', 'Tamil', 'Telugu', 'Hindi', 'Gujarati'];
+  String selectedItem = "Hindi";
+  var inputFile ;
+  var outputFile ;
+  var downloadLink;
+  var docID;
+  Uri api = Uri.parse("https://b1e1-35-196-26-202.ngrok-free.app/translate/document/");
+  Uri audio_api = Uri.parse("https://1562-2401-4900-1cb9-9e03-219e-b5c0-8a31-5c66.ngrok-free.app/translate_and_speak/document/");
 
   Future<String> uploadPdf(String fileName, io.File file) async{
-    final reference = FirebaseStorage.instance.ref().child("Uploaded_documents/$fileName.pdf");
+    String? user = auth.currentUser!.email;
+    final reference = FirebaseStorage.instance.ref().child("$user/Indian_Translation/Uploaded_documents/$fileName.docx");
     final uploadTask = reference.putFile(file);
     await uploadTask.whenComplete(() {} );
     final downloadLink = await reference.getDownloadURL();
@@ -37,26 +52,165 @@ class _IndianState extends State<Indian> {
   void pickFile() async {
     final pickedFile = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['pdf'],
+      allowedExtensions: ['docx'],
     );
-    if(pickedFile != null){
-      String fileName = pickedFile.files[0].name;
-      io.File file = io.File(pickedFile.files[0].path!);
-      final downloadLink = await uploadPdf(fileName, file);
-      User user = auth.currentUser!;
-      await store.collection("User_Documents").doc(user.email.toString()).collection("Data_Curation").add({
-        "name": fileName,
-        "input": downloadLink,
-        "output": ""
-      });
+    if(pickedFile != null) {
+      fileName = pickedFile.files[0].name;
+      name = fileName;
+      inputFile = io.File(pickedFile.files[0].path!);
+      downloadLink = await uploadPdf(fileName, inputFile);
     }
+    setState(() {});
   }
 
   void getPdf() async {
     final result = await store.collection("User_Documents").doc(auth.currentUser!.email).collection("Data_Curation").get();
     pdfs = result.docs.map((e) => e.data()).toList();
-
     setState(() {});
+  }
+
+  String setLanguage(String? item){
+    switch(item){
+      case "Kannada":
+        lang = "kn";
+        break;
+      case "Tamil":
+        lang = "ta";
+        break;
+      case "Telugu":
+        lang = "te";
+        break;
+      case "Hindi":
+        lang = "hi";
+        break;
+      case "Gujarati":
+        lang = "gu";
+        break;
+      case "Malayalam":
+        lang = "ml";
+        break;
+      default:
+        lang = "";
+        break;
+    }
+    return lang;
+  }
+
+  void translateDocument() async {
+    setState(() {
+      isSuccess = true;
+    });
+    showToast(message: "Translating document!");
+    var request = http.MultipartRequest("POST", api);
+    request.files.add(await http.MultipartFile.fromPath(
+      'file', // This is the key for the file parameter in your API
+      inputFile.path,
+      contentType: MediaType('application', 'octet-stream'), // You may need to adjust the content type based on your API requirements
+    ));
+
+    // Add other parameters if needed
+    request.fields['source_language'] = 'en';
+    request.fields['target_language'] = setLanguage(selectedItem);
+
+    var streamedResponse = await request.send();
+    var response = await http.Response.fromStream(streamedResponse);
+    if(response.statusCode == 200){
+      String? user = auth.currentUser?.email; // Access user information (adjust if needed)
+      //String contentType = response.headers['Content-Type'] ?? 'application/octet-stream'; // Get file type from header
+
+      var file = fileName.split(".docx")[0];
+      Reference ref = FirebaseStorage.instance.ref().child("$user/Indian_Translation/Output_documents/$file-$selectedItem.docx");
+
+      UploadTask uploadTask = ref.putData(response.bodyBytes);
+
+      // Handle completion and errors
+      await uploadTask.whenComplete(() => print('File uploaded to Firebase Storage'));
+      final outputLink = await ref.getDownloadURL();
+
+
+      uploadTask.snapshotEvents.listen((event) {
+        // Handle progress events
+        print(event.bytesTransferred / event.totalBytes);
+      });
+      DocumentReference docRef = await store.collection("User_Documents").doc(user.toString()).collection("Indian_Translation").add({
+        "input": downloadLink,
+        "output": outputLink
+      });
+      docID = docRef.id;
+
+
+      setState(() {
+        isSuccess = false;
+      });
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => TextIndian(data: docID, name: file+"-"+selectedItem+".docx"),
+        ),
+      );
+    }else{
+      showToast(message: response.statusCode.toString());
+    }
+  }
+
+  void translateDocumentAudio() async {
+    setState(() {
+      isSuccess = true;
+    });
+    showToast(message: "Translating document!");
+    var request = http.MultipartRequest("POST", audio_api);
+    request.files.add(await http.MultipartFile.fromPath(
+      'file', // This is the key for the file parameter in your API
+      inputFile.path,
+      contentType: MediaType('audio', 'mp3'), // You may need to adjust the content type based on your API requirements
+    ));
+
+    // Add other parameters if needed
+    request.fields['source_language'] = 'en';
+    request.fields['target_language'] = setLanguage(selectedItem);
+
+    var streamedResponse = await request.send();
+    var response = await http.Response.fromStream(streamedResponse);
+    if(response.statusCode == 200){
+      showToast(message: "Success!");
+      final audioBytes = response.bodyBytes;
+      String? user = auth.currentUser?.email; // Access user information (adjust if needed)
+      //String contentType = response.headers['Content-Type'] ?? 'application/octet-stream'; // Get file type from header
+
+      var file = fileName.toString().split(".docx")[0];
+      Reference ref =  FirebaseStorage.instance.ref().child("$user/Indian_Translation/Output_Audios/$file-$selectedItem.mp3");
+
+      UploadTask uploadTask = ref.putData(audioBytes);
+
+      // Handle completion and errors
+      await uploadTask.whenComplete(() => print('File uploaded to Firebase Storage'));
+      final outputLink = await ref.getDownloadURL();
+
+
+      uploadTask.snapshotEvents.listen((event) {
+        // Handle progress events
+        print(event.bytesTransferred / event.totalBytes);
+      });
+      DocumentReference docRef = await store.collection("User_Documents").doc(user.toString()).collection("Indian_Translation_Audio").add({
+        "input": downloadLink,
+        "output": outputLink
+      });
+      docID = docRef.id;
+
+      setState(() {
+        isSuccess = false;
+      });
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => AudioIndian(data: docID, name: file+"-"+selectedItem+".mp3"),
+        ),
+      );
+    }else{
+      showToast(message: response.statusCode.toString());
+    }
   }
 
   @override
@@ -138,7 +292,7 @@ class _IndianState extends State<Indian> {
                             width: 150.0,
                             child: Center(
                               child: Text(
-                                'None',
+                                name,
                                 style: TextStyle(
                                     fontFamily: 'Poppins-Medium',
                                     fontSize: 15.0
@@ -189,24 +343,24 @@ class _IndianState extends State<Indian> {
                         height: 20.0,
                       ),
                       Center(
-                        child: SizedBox(
-                          width: 150.0,
-                          child: DropdownButtonFormField<String>(
-                            decoration: InputDecoration(
-                              enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                borderSide: BorderSide(width: 1, color: Colors.black)
-                              )
+                          child: SizedBox(
+                            width: 180.0,
+                            child: DropdownButtonFormField<String>(
+                              decoration: InputDecoration(
+                                  enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(width: 1, color: Colors.black)
+                                  )
+                              ),
+                              value: selectedItem,
+                              items: languages
+                                  .map((item) => DropdownMenuItem<String>(
+                                value: item,
+                                child: Text(item, style: TextStyle(fontFamily: 'Poppins-Medium'),),
+                              )).toList(),
+                              onChanged: (item) => setState(() => selectedItem = item!),
                             ),
-                            value: selectedItem,
-                            items: languages
-                              .map((item) => DropdownMenuItem<String>(
-                              value: item,
-                              child: Text(item, style: TextStyle(fontFamily: 'Poppins-Medium'),),
-                            )).toList(),
-                            onChanged: (item) => setState(() => selectedItem = item),
-                          ),
-                        )
+                          )
                       ),
                       SizedBox(
                         height: 40.0,
@@ -217,7 +371,8 @@ class _IndianState extends State<Indian> {
                         child: Card(
                             color: Colors.lightBlue[100],
                             child: Center(
-                                child: Text(
+                                child: isSuccess ? CircularProgressIndicator(
+                                  color: Colors.white,) :Text(
                                   'Output',
                                   style: TextStyle(
                                       fontSize: 20.0,
@@ -246,7 +401,13 @@ class _IndianState extends State<Indian> {
                       ),
                       GestureDetector(
                         onTap: (){
-                          Navigator.pushNamed(context, '/text_indian');
+                          if(selectedItem == ""){
+                            showToast(message: "Select a language!");
+                          }else if(inputFile == null){
+                            showToast(message: "Upload a document!");
+                          }else{
+                            translateDocument();
+                          }
                         },
                         child: Container(
                           height: 55.0,
@@ -274,7 +435,13 @@ class _IndianState extends State<Indian> {
                       ),
                       GestureDetector(
                         onTap: (){
-                          Navigator.pushNamed(context, '/audio_indian');
+                          if(selectedItem == ""){
+                            showToast(message: "Select a language!");
+                          }else if(inputFile == null){
+                            showToast(message: "Upload a document!");
+                          }else{
+                            translateDocumentAudio();
+                          }
                         },
                         child: Container(
                           height: 55.0,

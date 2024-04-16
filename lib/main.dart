@@ -45,8 +45,18 @@ void main() async {
   final name = args['name'] as String;
   return AudioForeign(data: data, name: name);
   },
-    '/text_indian' : (context) => const TextIndian(),
-    '/audio_indian' : (context) => const AudioIndian(),
+    '/text_indian' : (context) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
+      final data = args['data'] as String;
+      final name = args['name'] as String;
+      return TextIndian(data: data, name: name);
+    },
+    '/audio_indian' : (context) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
+      final data = args['data'] as String;
+      final name = args['name'] as String;
+      return AudioIndian(data: data, name: name);
+    },
     '/video_indian' : (context) => const VideoIndian(),
   },
 ));}
