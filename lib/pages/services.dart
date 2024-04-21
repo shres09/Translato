@@ -34,7 +34,7 @@ class _ServicesState extends State<Services> {
             ),
             MaterialButton(
               onPressed: () {
-                Navigator.pushNamed(context, '/data_curation');
+                Navigator.pushNamed(context, '/curation_first');
               },
               child: Card(
                 shadowColor: Colors.blue,

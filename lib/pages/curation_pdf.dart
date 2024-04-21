@@ -1,25 +1,30 @@
-import 'package:audioplayers/audioplayers.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:easy_pdf_viewer/easy_pdf_viewer.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
+import 'package:document_viewer/document_viewer.dart';
 import 'package:translato/global/common/toast.dart';
+import 'package:translato/pages/data_curation.dart';
 
-class AudioIndian extends StatefulWidget {
-
+class CurationPdf extends StatefulWidget {
   final String data;
   final String name;
-  const AudioIndian({Key? key, required this.data, required this.name})
+
+  const CurationPdf({Key? key, required this.data, required this.name})
       : super(key: key);
 
   @override
-  State<AudioIndian> createState() => _AudioIndianState();
+  State<CurationPdf> createState() => _CurationPdfState();
 }
 
-class _AudioIndianState extends State<AudioIndian> {
+class _CurationPdfState extends State<CurationPdf> {
   String outputUrl = "";
   String fileName = "None";
   FirebaseAuth auth = FirebaseAuth.instance;
-  final player = AudioPlayer();
 
   @override
   void initState() {
@@ -41,7 +46,7 @@ class _AudioIndianState extends State<AudioIndian> {
     try {
       final docRef = store.collection("User_Documents")
           .doc(auth.currentUser!.email)
-          .collection("Indian_Translation_Audio")
+          .collection("Data_Curation")
           .doc(data);
       final docSnapshot = await docRef.get();
 
@@ -82,7 +87,7 @@ class _AudioIndianState extends State<AudioIndian> {
                         height: 30.0,
                       ),
                       Text(
-                        'Curated Audio',
+                        'Curated Document - PDF',
                         style: TextStyle(
                           fontFamily: 'Anton-Regular',
                           fontSize: 32.0,
@@ -94,45 +99,50 @@ class _AudioIndianState extends State<AudioIndian> {
                       Center(
                         child: Column(
                           children: [
-                            Center(
-                              child: Row(
-                                children: [
-                                  Center(
-                                    child: ElevatedButton(
-                                        onPressed: () async {
-                                          getDoc();
-                                          if(outputUrl==""){
-                                            showToast(message: "Error playing audio!");
-                                          }else{
-                                            await player.play(UrlSource(outputUrl));
-                                          }
-                                        },
-                                        child: Text(
-                                            "play"
-                                        )
-                                    ),
+                            GestureDetector(
+                              onTap: () {
+                                getDoc();
+                                if(outputUrl==""){
+                                  showToast(message: "Error opening file!");
+                                }else{
+                                  Navigator.of(context).push(MaterialPageRoute(builder: (context) => PdfViewerScreen(pdfUrl: outputUrl!)));
+                                }
+                              },
+                              child: Container(
+                                width: 120.0,
+                                child: Card(
+                                  elevation: 8.0,
+                                  child: Column(
+                                    children: [
+                                      SizedBox(
+                                        height: 10.0,
+                                      ),
+                                      Image(
+                                        image: AssetImage('assets/pdf.png'),
+                                        width: 100.0,
+                                        height: 100.0,),
+                                      SizedBox(
+                                        height: 10.0,
+                                      ),
+                                      Text(
+                                        fileName,
+                                        style: TextStyle(
+                                            fontFamily: 'Poppins-Medium',
+                                            fontSize: 13.0
+                                        ),),
+                                      SizedBox(
+                                        height: 10.0,
+                                      )
+                                    ],
                                   ),
-                                  SizedBox(
-                                    width: 30.0,
-                                  ),
-                                  Center(
-                                    child: ElevatedButton(
-                                        onPressed: () async {
-                                          await player.pause();
-                                        },
-                                        child: Text(
-                                            "pause"
-                                        )
-                                    ),
-                                  )
-                                ],
+                                ),
                               ),
                             ),
                             SizedBox(
                               height: 10.0,
                             ),
                             Text(
-                              fileName,
+                              'Click to view the pdf',
                               style: TextStyle(
                                   fontSize: 12.0,
                                   fontFamily: 'Poppins-Medium'
@@ -150,5 +160,3 @@ class _AudioIndianState extends State<AudioIndian> {
     );
   }
 }
-
-

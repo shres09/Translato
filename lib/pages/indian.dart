@@ -38,7 +38,7 @@ class _IndianState extends State<Indian> {
   var downloadLink;
   var docID;
   Uri api = Uri.parse("https://b1e1-35-196-26-202.ngrok-free.app/translate/document/");
-  Uri audio_api = Uri.parse("https://1562-2401-4900-1cb9-9e03-219e-b5c0-8a31-5c66.ngrok-free.app/translate_and_speak/document/");
+  Uri audio_api = Uri.parse("https://c11b-34-125-141-94.ngrok-free.app/TTS/audio/");
 
   Future<String> uploadPdf(String fileName, io.File file) async{
     String? user = auth.currentUser!.email;
@@ -209,6 +209,9 @@ class _IndianState extends State<Indian> {
         ),
       );
     }else{
+      setState(() {
+        isSuccess = false;
+      });
       showToast(message: response.statusCode.toString());
     }
   }

@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:translato/global/common/toast.dart';
 import 'package:translato/pages/audio_foreign.dart';
+import 'package:translato/pages/feedback_page.dart';
 import 'package:translato/pages/text_foreign.dart';
 
 class Foreign extends StatefulWidget {
@@ -503,7 +504,37 @@ class _ForeignState extends State<Foreign> {
 
                 )
             )
-        )
+        ),
+        floatingActionButton:GestureDetector(
+          onTap: (){
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => FeedbackPage(data: "Foreign Translation"),
+              ),
+            );
+          },
+          child: Container(
+            height: 50.0,
+            width: 120.0,
+            child: Card(
+                elevation: 8.0,
+                color: Colors.lightBlue[200],
+                child: Center(
+                    child: Text(
+                      'Feedback',
+                      style: TextStyle(
+                          fontSize: 14.0,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Poppins-Medium',
+                          color: Colors.white
+                      ),
+                    )
+                )
+
+            ),
+          ),
+    )
     );
   }
 }

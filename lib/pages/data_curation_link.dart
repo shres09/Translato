@@ -16,15 +16,16 @@ import 'package:translato/pages/curation_mp3.dart';
 import 'package:translato/pages/curation_mp4.dart';
 import 'package:translato/pages/curation_pdf.dart';
 import 'package:translato/pages/curation_txt.dart';
+import 'package:translato/widgets/text_field.dart';
 
-class DataCuration extends StatefulWidget {
-  const DataCuration({super.key});
+class DataCurationLink extends StatefulWidget {
+  const DataCurationLink({super.key});
 
   @override
-  State<DataCuration> createState() => _DataCurationState();
+  State<DataCurationLink> createState() => _DataCurationLinkState();
 }
 
-class _DataCurationState extends State<DataCuration> {
+class _DataCurationLinkState extends State<DataCurationLink> {
 
   FirebaseFirestore store = FirebaseFirestore.instance;
   FirebaseAuth auth = FirebaseAuth.instance;
@@ -37,9 +38,8 @@ class _DataCurationState extends State<DataCuration> {
   var outputFile ;
   var downloadLink;
   var docID;
-  var file;
-
   String selectedItem = "pdf";
+  TextEditingController link = TextEditingController();
   final List<String> outputs = ['pdf', 'docx', 'docx - with delimiters', 'jpg', 'txt', 'mp3', 'mp4'];
   Uri api = Uri.parse("https://9b45-35-231-134-104.ngrok-free.app");
   Uri finalApi = Uri.parse("");
@@ -57,7 +57,7 @@ class _DataCurationState extends State<DataCuration> {
   void pickFile() async {
     final pickedFile = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['docx', 'pdf', 'mp3', 'txt', 'mp4', 'jpg'],
+      allowedExtensions: ['docx'],
     );
     if(pickedFile != null) {
       fileName = pickedFile.files[0].name;
@@ -104,19 +104,16 @@ class _DataCurationState extends State<DataCuration> {
     showToast(message: "Curating document!");
     finalApi = setEndpoint(selectedItem);
     var request = http.MultipartRequest("POST", finalApi);
-    request.files.add(await http.MultipartFile.fromPath(
-      'file', // This is the key for the file parameter in your API
-      inputFile.path,
-      contentType: MediaType('application', 'octet-stream'), // You may need to adjust the content type based on your API requirements
-    ));
+    request.fields['youtube_link'] = link.toString();
 
-    Reference ref;
     var streamedResponse = await request.send();
     var response = await http.Response.fromStream(streamedResponse);
     if(response.statusCode == 200){
       String? user = auth.currentUser?.email; // Access user information (adjust if needed)
       //String contentType = response.headers['Content-Type'] ?? 'application/octet-stream'; // Get file type from header
 
+      var file;
+      Reference ref;
       if(selectedItem == "docx - with delimiters"){
         file = fileName.split(".docx")[0];
         ref = FirebaseStorage.instance.ref().child("$user/Data_Curation/Output_documents/$file.docx");
@@ -142,18 +139,21 @@ class _DataCurationState extends State<DataCuration> {
         "output": outputLink,
         "output_type": selectedItem
       });
-      showToast(message: "Added to firestore");
 
       docID = docRef.id;
       outputUrl = outputLink;
       name = fileName;
       showToast(message: "Data curation successfull!");
+      setState(() {
+        isSuccess = false;
+      });
+
       switch(selectedItem){
         case "pdf":
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => CurationPdf(data: this.docID, name: this.file+"-"+selectedItem+".pdf"),
+              builder: (context) => CurationPdf(data: docID, name: file+"-"+selectedItem+".pdf"),
             ),
           );
           break;
@@ -209,9 +209,6 @@ class _DataCurationState extends State<DataCuration> {
           showToast(message: "Failed to navigate!");
           break;
       }
-      setState(() {
-        isSuccess = false;
-      });
     }else{
       setState(() {
         isSuccess = false;
@@ -228,6 +225,12 @@ class _DataCurationState extends State<DataCuration> {
   }
 
   @override
+  void dispose() {
+    link.dispose();
+    super.dispose();
+  }
+
+  @override
   void initState() {
     // TODO: implement initState
     super.initState();
@@ -237,210 +240,168 @@ class _DataCurationState extends State<DataCuration> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.lightBlue[200],
-        centerTitle: true,
-        title: const Text(
-          'VIVEKA',
-          style: TextStyle(
-            letterSpacing: 2.0,
-            fontSize: 24.0,
-            fontWeight: FontWeight.bold,
-            fontFamily: 'Anton-Regular',
-          ),),
-      ),
-      body: SingleChildScrollView(
-      child: Center(
-        child: Column(
-          children: [
-            SizedBox(
-              height: 30.0,
-            ),
-            Text(
-          'Data Curation',
-          style: TextStyle(
-          fontFamily: 'Anton-Regular',
-          fontSize: 32.0,
-        ),
-      ),
-          SizedBox(
-            height: 20.0,
-          ),
-          Container(
-            height: 50.0,
-            width: 380.0,
-            child: Card(
-              color: Colors.lightBlue[100],
-              child: Center(
-                child: Text(
-                'Input',
-                style: TextStyle(
-                  fontSize: 20.0,
-                  fontFamily: 'Poppins-Medium',
-                  color: Colors.black
-              ),
-              )
-                )
-
-                ),
-          ),
-          SizedBox(
-            height: 10.0,
-          ),
-          Text(
-            'Upload document here',
+        appBar: AppBar(
+          backgroundColor: Colors.lightBlue[200],
+          centerTitle: true,
+          title: const Text(
+            'VIVEKA',
             style: TextStyle(
-              fontFamily: 'Poppins-Medium',
-              fontSize: 20.0,
-            ),
-          ),
-          SizedBox(
-            height: 20.0,
-          ),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                color: Colors.grey[300],
-                height: 50.0,
-                width: 150.0,
-                child: Center(
-                  child: Text(
-                    fileName,
-                    style: TextStyle(
-                      fontFamily: 'Poppins-Medium',
-                      fontSize: 15.0
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(
-                width: 15.0,
-              ),
-              GestureDetector(
-                onTap: (){
-                  pickFile();
-                },
-                child: Container(
-                  height: 55.0,
-                  width: 120.0,
-                  child: Card(
-                    elevation: 8.0,
-                      color: Colors.lightBlue[200],
-                      child: Center(
-                          child: Text(
-                            'Upload',
-                            style: TextStyle(
-                                fontSize: 15.0,
-                                fontFamily: 'Poppins-Medium',
-                                color: Colors.white
+              letterSpacing: 2.0,
+              fontSize: 24.0,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Anton-Regular',
+            ),),
+        ),
+        body: SingleChildScrollView(
+            child: Center(
+                child: Column(
+                    children: [
+                      SizedBox(
+                        height: 30.0,
+                      ),
+                      Text(
+                        'Data Curation',
+                        style: TextStyle(
+                          fontFamily: 'Anton-Regular',
+                          fontSize: 32.0,
+                        ),
+                      ),
+                      SizedBox(
+                        height: 20.0,
+                      ),
+                      Container(
+                        height: 50.0,
+                        width: 380.0,
+                        child: Card(
+                            color: Colors.lightBlue[100],
+                            child: Center(
+                                child: Text(
+                                  'Input',
+                                  style: TextStyle(
+                                      fontSize: 20.0,
+                                      fontFamily: 'Poppins-Medium',
+                                      color: Colors.black
+                                  ),
+                                )
+                            )
+
+                        ),
+                      ),
+                      SizedBox(
+                        height: 10.0,
+                      ),
+                      Text(
+                        'Enter youtube link here',
+                        style: TextStyle(
+                          fontFamily: 'Poppins-Medium',
+                          fontSize: 20.0,
+                        ),
+                      ),
+                      SizedBox(
+                        height: 20.0,
+                      ),
+                      TextFieldFormat(
+                        controller: link,
+                        hintText: "Youtube link",
+                        isPasswordField: false,
+                      ),
+                      SizedBox(
+                        height: 40.0,
+                      ),
+                      Container(
+                        height: 50.0,
+                        width: 380.0,
+                        child: Card(
+                            color: Colors.lightBlue[100],
+                            child: Center(
+                                child: Text(
+                                  'Output',
+                                  style: TextStyle(
+                                      fontSize: 20.0,
+                                      fontFamily: 'Poppins-Medium',
+                                      color: Colors.black
+                                  ),
+                                )
+                            )
+
+                        ),
+                      ),
+                      SizedBox(
+                        height: 10.0,
+                      ),
+                      Center(
+                        child: Text(
+                          'Select the type of output: ',
+                          style: TextStyle(
+                            fontFamily: 'Poppins-Medium',
+                            fontSize: 20.0,
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 20.0,
+                      ),
+                      Center(
+                          child: SizedBox(
+                            width: 150.0,
+                            child: DropdownButtonFormField<String>(
+                              decoration: InputDecoration(
+                                  enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(width: 1, color: Colors.black)
+                                  )
+                              ),
+                              value: selectedItem,
+                              items: outputs
+                                  .map((item) => DropdownMenuItem<String>(
+                                value: item,
+                                child: Text(item, style: TextStyle(fontFamily: 'Poppins-Medium'),),
+                              )).toList(),
+                              onChanged: (item) => setState(() => selectedItem = item!),
                             ),
                           )
-                      )
+                      ),
+                      SizedBox(
+                        height: 20.0,
+                      ),
+                      GestureDetector(
+                        onTap: (){
+                          if(inputFile == null){
+                            showToast(message: "Upload a document!");
+                          }else{
+                            curateDocument();
+                          }
+                        },
+                        child: Container(
+                          height: 55.0,
+                          width: 250.0,
+                          child: Card(
+                              elevation: 8.0,
+                              color: Colors.lightBlue[200],
+                              child: Center(
+                                  child: isSuccess ? CircularProgressIndicator(
+                                    color: Colors.white,) : Text(
+                                    'Curate data',
+                                    style: TextStyle(
+                                        fontSize: 20.0,
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'Poppins-Medium',
+                                        color: Colors.white
+                                    ),
+                                  )
+                              )
 
-                  ),
-                ),
-              )
-            ],
-          ),
-            SizedBox(
-              height: 40.0,
-            ),
-            Container(
-              height: 50.0,
-              width: 380.0,
-              child: Card(
-                  color: Colors.lightBlue[100],
-                  child: Center(
-                      child: Text(
-                        'Output',
-                        style: TextStyle(
-                            fontSize: 20.0,
-                            fontFamily: 'Poppins-Medium',
-                            color: Colors.black
-                        ),
-                      )
-                  )
-
-              ),
-            ),
-            SizedBox(
-              height: 10.0,
-            ),
-            Center(
-              child: Text(
-                'Select the type of output: ',
-                style: TextStyle(
-                  fontFamily: 'Poppins-Medium',
-                  fontSize: 20.0,
-                ),
-              ),
-            ),
-            SizedBox(
-              height: 20.0,
-            ),
-            Center(
-                child: SizedBox(
-                  width: 250.0,
-                  child: DropdownButtonFormField<String>(
-                    decoration: InputDecoration(
-                        enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            borderSide: BorderSide(width: 1, color: Colors.black)
-                        )
-                    ),
-                    value: selectedItem,
-                    items: outputs
-                        .map((item) => DropdownMenuItem<String>(
-                      value: item,
-                      child: Text(item, style: TextStyle(fontFamily: 'Poppins-Medium'),),
-                    )).toList(),
-                    onChanged: (item) => setState(() => selectedItem = item!),
-                  ),
-                )
-            ),
-            SizedBox(
-              height: 20.0,
-            ),
-            GestureDetector(
-              onTap: (){
-                if(inputFile == null){
-                  showToast(message: "Upload a document!");
-                }else{
-                  curateDocument();
-                }
-              },
-              child: Container(
-                height: 55.0,
-                width: 250.0,
-                child: Card(
-                    elevation: 8.0,
-                    color: Colors.lightBlue[200],
-                    child: Center(
-                        child: isSuccess ? CircularProgressIndicator(
-                          color: Colors.white,) : Text(
-                          'Curate data',
-                          style: TextStyle(
-                              fontSize: 20.0,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'Poppins-Medium',
-                              color: Colors.white
                           ),
-                        )
-                    )
+                        ),
+                      ),
+                      SizedBox(
+                        height: 40.0,
+                      )
+                    ]
 
-                ),
-              ),
-            ),
-            SizedBox(
-              height: 40.0,
+                )
             )
-          ]
-
-    )
-      )
-    )
+        )
     );
   }
 }
@@ -456,7 +417,7 @@ class PdfViewerScreen extends StatefulWidget {
 class _PdfViewerScreenState extends State<PdfViewerScreen> {
 
   PDFDocument? document;
-  
+
   void initialisePdf() async {
     document = await PDFDocument.fromURL(widget.pdfUrl);
     setState(() {});

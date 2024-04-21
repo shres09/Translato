@@ -4,18 +4,18 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:translato/global/common/toast.dart';
 
-class AudioIndian extends StatefulWidget {
+class CurationJpg extends StatefulWidget {
 
   final String data;
   final String name;
-  const AudioIndian({Key? key, required this.data, required this.name})
+  const CurationJpg({Key? key, required this.data, required this.name})
       : super(key: key);
 
   @override
-  State<AudioIndian> createState() => _AudioIndianState();
+  State<CurationJpg> createState() => _CurationJpgState();
 }
 
-class _AudioIndianState extends State<AudioIndian> {
+class _CurationJpgState extends State<CurationJpg> {
   String outputUrl = "";
   String fileName = "None";
   FirebaseAuth auth = FirebaseAuth.instance;
@@ -41,7 +41,7 @@ class _AudioIndianState extends State<AudioIndian> {
     try {
       final docRef = store.collection("User_Documents")
           .doc(auth.currentUser!.email)
-          .collection("Indian_Translation_Audio")
+          .collection("Data_Curation")
           .doc(data);
       final docSnapshot = await docRef.get();
 
@@ -82,7 +82,7 @@ class _AudioIndianState extends State<AudioIndian> {
                         height: 30.0,
                       ),
                       Text(
-                        'Curated Audio',
+                        'Curated Image',
                         style: TextStyle(
                           fontFamily: 'Anton-Regular',
                           fontSize: 32.0,
@@ -94,39 +94,8 @@ class _AudioIndianState extends State<AudioIndian> {
                       Center(
                         child: Column(
                           children: [
-                            Center(
-                              child: Row(
-                                children: [
-                                  Center(
-                                    child: ElevatedButton(
-                                        onPressed: () async {
-                                          getDoc();
-                                          if(outputUrl==""){
-                                            showToast(message: "Error playing audio!");
-                                          }else{
-                                            await player.play(UrlSource(outputUrl));
-                                          }
-                                        },
-                                        child: Text(
-                                            "play"
-                                        )
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: 30.0,
-                                  ),
-                                  Center(
-                                    child: ElevatedButton(
-                                        onPressed: () async {
-                                          await player.pause();
-                                        },
-                                        child: Text(
-                                            "pause"
-                                        )
-                                    ),
-                                  )
-                                ],
-                              ),
+                            Image(
+                              image: NetworkImage(outputUrl),
                             ),
                             SizedBox(
                               height: 10.0,

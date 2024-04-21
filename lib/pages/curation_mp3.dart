@@ -4,18 +4,18 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:translato/global/common/toast.dart';
 
-class AudioIndian extends StatefulWidget {
+class CurationMp3 extends StatefulWidget {
 
   final String data;
   final String name;
-  const AudioIndian({Key? key, required this.data, required this.name})
+  const CurationMp3({Key? key, required this.data, required this.name})
       : super(key: key);
 
   @override
-  State<AudioIndian> createState() => _AudioIndianState();
+  State<CurationMp3> createState() => _CurationMp3State();
 }
 
-class _AudioIndianState extends State<AudioIndian> {
+class _CurationMp3State extends State<CurationMp3> {
   String outputUrl = "";
   String fileName = "None";
   FirebaseAuth auth = FirebaseAuth.instance;
@@ -41,7 +41,7 @@ class _AudioIndianState extends State<AudioIndian> {
     try {
       final docRef = store.collection("User_Documents")
           .doc(auth.currentUser!.email)
-          .collection("Indian_Translation_Audio")
+          .collection("Data_Curation")
           .doc(data);
       final docSnapshot = await docRef.get();
 
@@ -94,39 +94,33 @@ class _AudioIndianState extends State<AudioIndian> {
                       Center(
                         child: Column(
                           children: [
-                            Center(
-                              child: Row(
-                                children: [
-                                  Center(
-                                    child: ElevatedButton(
-                                        onPressed: () async {
-                                          getDoc();
-                                          if(outputUrl==""){
-                                            showToast(message: "Error playing audio!");
-                                          }else{
-                                            await player.play(UrlSource(outputUrl));
-                                          }
-                                        },
-                                        child: Text(
-                                            "play"
-                                        )
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: 30.0,
-                                  ),
-                                  Center(
-                                    child: ElevatedButton(
-                                        onPressed: () async {
-                                          await player.pause();
-                                        },
-                                        child: Text(
-                                            "pause"
-                                        )
-                                    ),
-                                  )
-                                ],
-                              ),
+                            Row(
+                              children: [
+                                ElevatedButton(
+                                    onPressed: () async {
+                                      getDoc();
+                                      if(outputUrl==""){
+                                        showToast(message: "Error playing audio!");
+                                      }else{
+                                        await player.play(UrlSource(outputUrl));
+                                      }
+                                    },
+                                    child: Text(
+                                        "play"
+                                    )
+                                ),
+                                SizedBox(
+                                  width: 30.0,
+                                ),
+                                ElevatedButton(
+                                    onPressed: () async {
+                                        await player.pause();
+                                    },
+                                    child: Text(
+                                        "pause"
+                                    )
+                                )
+                              ],
                             ),
                             SizedBox(
                               height: 10.0,
