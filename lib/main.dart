@@ -90,7 +90,12 @@ void main() async {
       final name = args['name'] as String;
       return CurationTxt(data: data, name: name);
     },
-    '/video_foreign' : (context) => const VideoForeign(),
+    '/video_foreign': (context) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
+      final data = args['data'] as String;
+      final name = args['name'] as String;
+      return VideoForeign(data: data, name: name);
+    },
     '/audio_foreign' : (context) {
   final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
   final data = args['data'] as String;
@@ -109,6 +114,11 @@ void main() async {
       final name = args['name'] as String;
       return AudioIndian(data: data, name: name);
     },
-    '/video_indian' : (context) => const VideoIndian(),
+    '/video_foreign': (context) {
+      final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
+      final data = args['data'] as String;
+      final name = args['name'] as String;
+      return VideoForeign(data: data, name: name);
+    },
   },
 ));}

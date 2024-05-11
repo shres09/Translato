@@ -19,6 +19,7 @@ class _AudioForeignState extends State<AudioForeign> {
   String outputUrl = "";
   String fileName = "None";
   FirebaseAuth auth = FirebaseAuth.instance;
+  final player = AudioPlayer();
 
   @override
   void initState() {
@@ -93,19 +94,42 @@ class _AudioForeignState extends State<AudioForeign> {
                       Center(
                         child: Column(
                           children: [
-                            ElevatedButton(
-                                onPressed: () async {
-                                  getDoc();
-                                  if(outputUrl==""){
-                                    showToast(message: "Error playing audio!");
-                                  }else{
-                                    final player = AudioPlayer();
-                                    await player.play(UrlSource(outputUrl));
-                                  }
-                                },
-                                child: Text(
-                                    "play"
-                                )
+                            Center(
+                              child: Row(
+                                children: [
+                                  SizedBox(
+                                    width: 100.0,
+                                  ),
+                                  Center(
+                                    child: ElevatedButton(
+                                        onPressed: () async {
+                                          getDoc();
+                                          if(outputUrl==""){
+                                            showToast(message: "Error playing audio!");
+                                          }else{
+                                            await player.play(UrlSource(outputUrl));
+                                          }
+                                        },
+                                        child: Text(
+                                            "play"
+                                        )
+                                    ),
+                                  ),
+                                  SizedBox(
+                                    width: 30.0,
+                                  ),
+                                  Center(
+                                    child: ElevatedButton(
+                                        onPressed: () async {
+                                          await player.pause();
+                                        },
+                                        child: Text(
+                                            "pause"
+                                        )
+                                    ),
+                                  )
+                                ],
+                              ),
                             ),
                             SizedBox(
                               height: 10.0,

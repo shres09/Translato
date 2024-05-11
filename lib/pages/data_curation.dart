@@ -41,7 +41,7 @@ class _DataCurationState extends State<DataCuration> {
 
   String selectedItem = "pdf";
   final List<String> outputs = ['pdf', 'docx', 'docx - with delimiters', 'jpg', 'txt', 'mp3', 'mp4'];
-  Uri api = Uri.parse("https://9b45-35-231-134-104.ngrok-free.app");
+  Uri api = Uri.parse("https://b9a8-34-86-9-107.ngrok-free.app");
   Uri finalApi = Uri.parse("");
 
 
@@ -113,18 +113,17 @@ class _DataCurationState extends State<DataCuration> {
     Reference ref;
     var streamedResponse = await request.send();
     var response = await http.Response.fromStream(streamedResponse);
-    if(response.statusCode == 200){
+    if (response.statusCode == 200) {
       String? user = auth.currentUser?.email; // Access user information (adjust if needed)
       //String contentType = response.headers['Content-Type'] ?? 'application/octet-stream'; // Get file type from header
 
-      if(selectedItem == "docx - with delimiters"){
+      if (selectedItem == "docx - with delimiters") {
         file = fileName.split(".docx")[0];
         ref = FirebaseStorage.instance.ref().child("$user/Data_Curation/Output_documents/$file.docx");
-      }else{
+      } else {
         file = fileName.split(selectedItem)[0];
-        ref = FirebaseStorage.instance.ref().child("$user/Data_Curation/Output_documents/$file."+selectedItem);
+        ref = FirebaseStorage.instance.ref().child("$user/Data_Curation/Output_documents/$file.$selectedItem");
       }
-
 
       UploadTask uploadTask = ref.putData(response.bodyBytes);
 
@@ -132,28 +131,28 @@ class _DataCurationState extends State<DataCuration> {
       await uploadTask.whenComplete(() => print('File uploaded to Firebase Storage'));
       final outputLink = await ref.getDownloadURL();
 
-
       uploadTask.snapshotEvents.listen((event) {
         // Handle progress events
         print(event.bytesTransferred / event.totalBytes);
       });
-      DocumentReference docRef = await store.collection("User_Documents").doc(user.toString()).collection("Data_curation").add({
+      DocumentReference docRef = await store.collection("User_Documents").doc(user.toString()).collection("Data_Curation").add({
         "input": downloadLink,
         "output": outputLink,
         "output_type": selectedItem
       });
-      showToast(message: "Added to firestore");
+      setState(() {
+        docID = docRef.id; // Set docID here
+      });
 
-      docID = docRef.id;
       outputUrl = outputLink;
       name = fileName;
       showToast(message: "Data curation successfull!");
-      switch(selectedItem){
+      switch (selectedItem) {
         case "pdf":
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => CurationPdf(data: this.docID, name: this.file+"-"+selectedItem+".pdf"),
+              builder: (context) => CurationPdf(data: docID, name: file+"-"+selectedItem+".pdf"),
             ),
           );
           break;
@@ -169,7 +168,7 @@ class _DataCurationState extends State<DataCuration> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => CurationDocx(data: docID, name: file+"-"+selectedItem+".docx - delimiter"),
+              builder: (context) => CurationDocx(data: docID, name: file+"-"+selectedItem+".docx"),
             ),
           );
           break;
@@ -212,7 +211,7 @@ class _DataCurationState extends State<DataCuration> {
       setState(() {
         isSuccess = false;
       });
-    }else{
+    } else {
       setState(() {
         isSuccess = false;
       });
@@ -255,6 +254,25 @@ class _DataCurationState extends State<DataCuration> {
           children: [
             SizedBox(
               height: 30.0,
+            ),
+            Row(
+              children: [
+                SizedBox(
+                  width: 50.0,
+                ),
+                Image(
+                  image: AssetImage('assets/logo.png'),
+                ),
+                SizedBox(
+                  width: 20.0,
+                ),
+                Image(
+                  image: AssetImage('assets/logo2.png'),
+                ),
+              ],
+            ),
+            SizedBox(
+              height: 20.0,
             ),
             Text(
           'Data Curation',
@@ -382,7 +400,7 @@ class _DataCurationState extends State<DataCuration> {
             ),
             Center(
                 child: SizedBox(
-                  width: 250.0,
+                  width: 300.0,
                   child: DropdownButtonFormField<String>(
                     decoration: InputDecoration(
                         enabledBorder: OutlineInputBorder(
@@ -434,7 +452,7 @@ class _DataCurationState extends State<DataCuration> {
               ),
             ),
             SizedBox(
-              height: 40.0,
+              height: 100.0,
             )
           ]
 

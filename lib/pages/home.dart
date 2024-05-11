@@ -27,11 +27,24 @@ class _HomeState extends State<Home> {
         child: const Center(
           child: Column(
           children: [
-            Padding(
-              padding: EdgeInsets.fromLTRB(20.0, 40.0, 20.0, 0.0),
-              child: Image(
-                image: AssetImage('assets/logo.png'),
-              ),
+            SizedBox(
+              height: 30.0,
+            ),
+            Row(
+              children: [
+                SizedBox(
+                  width: 50.0,
+                ),
+                Image(
+                  image: AssetImage('assets/logo.png'),
+                ),
+                SizedBox(
+                  width: 20.0,
+                ),
+                Image(
+                  image: AssetImage('assets/logo2.png'),
+                ),
+              ],
             ),
           SizedBox(
             height: 20.0,

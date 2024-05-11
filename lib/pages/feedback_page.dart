@@ -41,16 +41,16 @@ class _FeedbackPageState extends State<FeedbackPage> {
     try {
       var service = widget.data;
       String? user = auth.currentUser?.email; // Replace with the actual user ID or username
-      await FirebaseFirestore.instance.collection('Feedback').add({
+      await FirebaseFirestore.instance.collection('User_Documents').doc(user).collection("Feedback").add({
         'service': service,
-        'user': user,
         'translation': _selectedScore,
         'accuracy': accuracy,
-        'feedback' : feedback,
+        'feedback' : feedback.text, // Access the text value of the feedback controller
         'timestamp': Timestamp.now(),
       });
       // Show success message or navigate to another screen
       showToast(message: 'Feedback submitted successfully.');
+      Navigator.pushNamed(context, '/services');
     } catch (error) {
       // Handle error
       showToast(message: 'Error submitting feedback: $error');
@@ -111,8 +111,8 @@ class _FeedbackPageState extends State<FeedbackPage> {
                             _selectScore(i);
                           },
                           child: Container(
-                            width: 40,
-                            height: 40,
+                            width: 30,
+                            height: 30,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: _selectedScore >= i ? Colors.blue : Colors.grey,
@@ -161,8 +161,8 @@ class _FeedbackPageState extends State<FeedbackPage> {
                             selectAccuracy(i);
                           },
                           child: Container(
-                            width: 40,
-                            height: 40,
+                            width: 30,
+                            height: 30,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               color: accuracy >= i ? Colors.blue : Colors.grey,
@@ -208,8 +208,11 @@ class _FeedbackPageState extends State<FeedbackPage> {
             ),
             GestureDetector(
               onTap: (){
-                _selectedScore != 0 || accuracy != 0? _submitFeedback : null;
-                Navigator.pushNamed(context, '/services');
+                if (_selectedScore != 0 || accuracy != 0) { // Check if both scores are selected
+                  _submitFeedback(); // Call the submitFeedback function
+                } else {
+                  showToast(message: 'Please rate your experience before submitting feedback.');
+                }
               },
               child: Container(
                 height: 55.0,
@@ -228,7 +231,6 @@ class _FeedbackPageState extends State<FeedbackPage> {
                           ),
                         )
                     )
-
                 ),
               ),
             ),

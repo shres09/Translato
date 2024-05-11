@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:http/http.dart' as http;
 import 'package:translato/global/common/toast.dart';
+import 'package:translato/pages/feedback_page.dart';
 
 class CurationFirst extends StatefulWidget {
   const CurationFirst({super.key});
@@ -49,6 +50,25 @@ class _CurationFirstState extends State<CurationFirst> {
                     children: [
                       SizedBox(
                         height: 30.0,
+                      ),
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 50.0,
+                          ),
+                          Image(
+                            image: AssetImage('assets/logo.png'),
+                          ),
+                          SizedBox(
+                            width: 20.0,
+                          ),
+                          Image(
+                            image: AssetImage('assets/logo2.png'),
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        height: 20.0,
                       ),
                       Text(
                         'Data Curation',
@@ -151,7 +171,38 @@ class _CurationFirstState extends State<CurationFirst> {
 
                 )
             )
+        ),
+        floatingActionButton:GestureDetector(
+          onTap: (){
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => FeedbackPage(data: "Data Curation"),
+              ),
+            );
+          },
+          child: Container(
+            height: 50.0,
+            width: 120.0,
+            child: Card(
+                elevation: 8.0,
+                color: Colors.lightBlue[200],
+                child: Center(
+                    child: Text(
+                      'Feedback',
+                      style: TextStyle(
+                          fontSize: 14.0,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Poppins-Medium',
+                          color: Colors.white
+                      ),
+                    )
+                )
+
+            ),
+          ),
         )
+
     );
   }
 }

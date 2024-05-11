@@ -16,6 +16,7 @@ import 'package:translato/global/common/toast.dart';
 import 'package:translato/pages/audio_foreign.dart';
 import 'package:translato/pages/feedback_page.dart';
 import 'package:translato/pages/text_foreign.dart';
+import 'package:translato/pages/video_foreign.dart';
 
 class Foreign extends StatefulWidget {
   const Foreign({super.key});
@@ -41,8 +42,9 @@ class _ForeignState extends State<Foreign> {
   var outputFile ;
   var downloadLink;
   var docID;
-  Uri api = Uri.parse("https://e7a3-2401-4900-1cb9-9e03-219e-b5c0-8a31-5c66.ngrok-free.app/translate/document/");
-  Uri audio_api = Uri.parse("https://1562-2401-4900-1cb9-9e03-219e-b5c0-8a31-5c66.ngrok-free.app/translate_and_speak/document/");
+  Uri api = Uri.parse("https://90ee-2401-4900-1cba-914b-95c4-8f23-b01b-8951.ngrok-free.app/translate/document/");
+  Uri audio_api = Uri.parse("https://6fc7-35-197-140-189.ngrok-free.app/audio");
+  Uri video_api = Uri.parse("https://6fc7-35-197-140-189.ngrok-free.app/video");
 
   Future<String> uploadPdf(String fileName, io.File file) async{
     String? user = auth.currentUser!.email;
@@ -141,7 +143,6 @@ class _ForeignState extends State<Foreign> {
       });
       docID = docRef.id;
 
-
       setState(() {
         isSuccess = false;
       });
@@ -153,6 +154,9 @@ class _ForeignState extends State<Foreign> {
         ),
       );
     }else{
+      setState(() {
+        isSuccess = false;
+      });
       showToast(message: response.statusCode.toString());
     }
   }
@@ -212,9 +216,73 @@ class _ForeignState extends State<Foreign> {
         ),
       );
     }else{
+      setState(() {
+        isSuccess = false;
+      });
       showToast(message: response.statusCode.toString());
     }
   }
+
+  void translateDocumentVideo() async {
+    setState(() {
+      isSuccess = true;
+    });
+    showToast(message: "Translating document!");
+    var request = http.MultipartRequest("POST", video_api);
+    request.files.add(await http.MultipartFile.fromPath(
+      'file', // This is the key for the file parameter in your API
+      inputFile.path,
+      contentType: MediaType('application', 'octet-stream'), // You may need to adjust the content type based on your API requirements
+    ));
+
+    // Add other parameters if needed
+    request.fields['source_language'] = 'en';
+    request.fields['target_language'] = setLanguage(selectedItem);
+
+    var streamedResponse = await request.send();
+    var response = await http.Response.fromStream(streamedResponse);
+    if(response.statusCode == 200){
+      String? user = auth.currentUser?.email; // Access user information (adjust if needed)
+      //String contentType = response.headers['Content-Type'] ?? 'application/octet-stream'; // Get file type from header
+
+      var file = fileName.split(".docx")[0];
+      Reference ref = FirebaseStorage.instance.ref().child("$user/Foreign_Translation/Output_documents/$file-$selectedItem.mp4");
+
+      UploadTask uploadTask = ref.putData(response.bodyBytes);
+
+      // Handle completion and errors
+      await uploadTask.whenComplete(() => print('File uploaded to Firebase Storage'));
+      final outputLink = await ref.getDownloadURL();
+
+
+      uploadTask.snapshotEvents.listen((event) {
+        // Handle progress events
+        print(event.bytesTransferred / event.totalBytes);
+      });
+      DocumentReference docRef = await store.collection("User_Documents").doc(user.toString()).collection("Foreign_Translation").add({
+        "input": downloadLink,
+        "output": outputLink
+      });
+      docID = docRef.id;
+
+      setState(() {
+        isSuccess = false;
+      });
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => VideoForeign(data: docID, name: file+"-"+selectedItem+".mp4"),
+        ),
+      );
+    }else{
+      setState(() {
+        isSuccess = false;
+      });
+      showToast(message: response.statusCode.toString());
+    }
+  }
+
 
   @override
   void initState() {
@@ -244,6 +312,25 @@ class _ForeignState extends State<Foreign> {
                     children: [
                       SizedBox(
                         height: 30.0,
+                      ),
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 50.0,
+                          ),
+                          Image(
+                            image: AssetImage('assets/logo.png'),
+                          ),
+                          SizedBox(
+                            width: 20.0,
+                          ),
+                          Image(
+                            image: AssetImage('assets/logo2.png'),
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        height: 20.0,
                       ),
                       Text(
                         'Foreign Language',
@@ -474,7 +561,13 @@ class _ForeignState extends State<Foreign> {
                       ),
                       GestureDetector(
                         onTap: (){
-                          Navigator.pushNamed(context, '/video_foreign');
+                          if(selectedItem == ""){
+                            showToast(message: "Select a language!");
+                          }else if(inputFile == null){
+                            showToast(message: "Upload a document!");
+                          }else{
+                            translateDocumentVideo();
+                          }
                         },
                         child: Container(
                           height: 55.0,
@@ -498,7 +591,7 @@ class _ForeignState extends State<Foreign> {
                         ),
                       ),
                       SizedBox(
-                        height: 50.0,
+                        height: 100.0,
                       )
                     ]
 

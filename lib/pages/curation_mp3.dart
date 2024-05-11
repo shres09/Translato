@@ -93,6 +93,8 @@ class _CurationMp3State extends State<CurationMp3> {
                       ),
                       Center(
                         child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Row(
                               children: [

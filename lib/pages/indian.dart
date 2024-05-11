@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:http_parser/http_parser.dart';
 import 'package:translato/global/common/toast.dart';
 import 'package:translato/pages/audio_indian.dart';
+import 'package:translato/pages/feedback_page.dart';
 import 'package:translato/pages/text_indian.dart';
 
 class Indian extends StatefulWidget {
@@ -243,6 +244,25 @@ class _IndianState extends State<Indian> {
                     children: [
                       SizedBox(
                         height: 30.0,
+                      ),
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 50.0,
+                          ),
+                          Image(
+                            image: AssetImage('assets/logo.png'),
+                          ),
+                          SizedBox(
+                            width: 20.0,
+                          ),
+                          Image(
+                            image: AssetImage('assets/logo2.png'),
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        height: 20.0,
                       ),
                       Text(
                         'Indian Language',
@@ -496,12 +516,42 @@ class _IndianState extends State<Indian> {
                         ),
                       ),
                       SizedBox(
-                        height: 50.0,
+                        height: 100.0,
                       )
                     ]
 
                 )
             )
+        ),
+        floatingActionButton:GestureDetector(
+          onTap: (){
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => FeedbackPage(data: "Indian Translation"),
+              ),
+            );
+          },
+          child: Container(
+            height: 50.0,
+            width: 120.0,
+            child: Card(
+                elevation: 8.0,
+                color: Colors.lightBlue[200],
+                child: Center(
+                    child: Text(
+                      'Feedback',
+                      style: TextStyle(
+                          fontSize: 14.0,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Poppins-Medium',
+                          color: Colors.white
+                      ),
+                    )
+                )
+
+            ),
+          ),
         )
     );
   }

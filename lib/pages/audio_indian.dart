@@ -82,7 +82,7 @@ class _AudioIndianState extends State<AudioIndian> {
                         height: 30.0,
                       ),
                       Text(
-                        'Curated Audio',
+                        'Translated Audio',
                         style: TextStyle(
                           fontFamily: 'Anton-Regular',
                           fontSize: 32.0,
@@ -97,6 +97,9 @@ class _AudioIndianState extends State<AudioIndian> {
                             Center(
                               child: Row(
                                 children: [
+                                  SizedBox(
+                                    width: 100.0,
+                                  ),
                                   Center(
                                     child: ElevatedButton(
                                         onPressed: () async {

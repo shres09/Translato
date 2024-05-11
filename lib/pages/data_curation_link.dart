@@ -41,8 +41,9 @@ class _DataCurationLinkState extends State<DataCurationLink> {
   String selectedItem = "pdf";
   TextEditingController link = TextEditingController();
   final List<String> outputs = ['pdf', 'docx', 'docx - with delimiters', 'jpg', 'txt', 'mp3', 'mp4'];
-  Uri api = Uri.parse("https://9b45-35-231-134-104.ngrok-free.app");
+  Uri api = Uri.parse("https://b9a8-34-86-9-107.ngrok-free.app");
   Uri finalApi = Uri.parse("");
+  var file;
 
 
   Future<String> uploadPdf(String fileName, io.File file) async{
@@ -57,38 +58,39 @@ class _DataCurationLinkState extends State<DataCurationLink> {
   void pickFile() async {
     final pickedFile = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['docx'],
+      allowedExtensions: ['docx', 'pdf', 'mp3', 'txt', 'mp4', 'jpg'],
     );
     if(pickedFile != null) {
-      fileName = pickedFile.files[0].name;
+      fileName = pickedFile.files[0].name; // Update fileName with the picked file name
       inputFile = io.File(pickedFile.files[0].path!);
       downloadLink = await uploadPdf(fileName, inputFile);
     }
     setState(() {});
   }
 
+
   Uri setEndpoint(String? item){
     switch(item){
       case "pdf":
-        finalApi = Uri.parse(api.toString()+"/curate/document/pdf");
+        finalApi = Uri.parse(api.toString()+"/curate/youtube/pdf");
         break;
       case "docx":
-        finalApi = Uri.parse(api.toString()+"/curate/document/docx");
+        finalApi = Uri.parse(api.toString()+"/curate/youtube/docx");
         break;
       case "docx - with delimiters":
-        finalApi = Uri.parse(api.toString()+"/curate/document/delimiters");
+        finalApi = Uri.parse(api.toString()+"/curate/youtube/delimiters");
         break;
       case "jpg":
-        finalApi = Uri.parse(api.toString()+"/curate/document/jpg");
+        finalApi = Uri.parse(api.toString()+"/curate/youtube/jpg");
         break;
       case "txt":
-        finalApi = Uri.parse(api.toString()+"/curate/document/txt");
+        finalApi = Uri.parse(api.toString()+"/curate/youtube/txt");
         break;
       case "mp3":
-        finalApi = Uri.parse(api.toString()+"/curate/document/mp3");
+        finalApi = Uri.parse(api.toString()+"/curate/youtube/mp3");
         break;
       case "mp4":
-        finalApi = Uri.parse(api.toString()+"/curate/document/mp4");
+        finalApi = Uri.parse(api.toString()+"/curate/youtube/mp4");
         break;
       default:
         finalApi = Uri.parse("");
@@ -104,24 +106,23 @@ class _DataCurationLinkState extends State<DataCurationLink> {
     showToast(message: "Curating document!");
     finalApi = setEndpoint(selectedItem);
     var request = http.MultipartRequest("POST", finalApi);
-    request.fields['youtube_link'] = link.toString();
+    request.fields['youtube_link'] = link.text; // Use link.text instead of link.toString()
 
+    Reference ref;
     var streamedResponse = await request.send();
     var response = await http.Response.fromStream(streamedResponse);
-    if(response.statusCode == 200){
+    if (response.statusCode == 200) {
       String? user = auth.currentUser?.email; // Access user information (adjust if needed)
       //String contentType = response.headers['Content-Type'] ?? 'application/octet-stream'; // Get file type from header
 
-      var file;
-      Reference ref;
-      if(selectedItem == "docx - with delimiters"){
+      fileName = "Output";
+      if (selectedItem == "docx - with delimiter") {
         file = fileName.split(".docx")[0];
         ref = FirebaseStorage.instance.ref().child("$user/Data_Curation/Output_documents/$file.docx");
-      }else{
+      } else {
         file = fileName.split(selectedItem)[0];
-        ref = FirebaseStorage.instance.ref().child("$user/Data_Curation/Output_documents/$file."+selectedItem);
+        ref = FirebaseStorage.instance.ref().child("$user/Data_Curation/Output_documents/$file.$selectedItem");
       }
-
 
       UploadTask uploadTask = ref.putData(response.bodyBytes);
 
@@ -129,26 +130,23 @@ class _DataCurationLinkState extends State<DataCurationLink> {
       await uploadTask.whenComplete(() => print('File uploaded to Firebase Storage'));
       final outputLink = await ref.getDownloadURL();
 
-
       uploadTask.snapshotEvents.listen((event) {
         // Handle progress events
         print(event.bytesTransferred / event.totalBytes);
       });
-      DocumentReference docRef = await store.collection("User_Documents").doc(user.toString()).collection("Data_curation").add({
+      DocumentReference docRef = await store.collection("User_Documents").doc(user.toString()).collection("Data_Curation").add({
         "input": downloadLink,
         "output": outputLink,
         "output_type": selectedItem
       });
+      setState(() {
+        docID = docRef.id; // Set docID here
+      });
 
-      docID = docRef.id;
       outputUrl = outputLink;
       name = fileName;
       showToast(message: "Data curation successfull!");
-      setState(() {
-        isSuccess = false;
-      });
-
-      switch(selectedItem){
+      switch (selectedItem) {
         case "pdf":
           Navigator.push(
             context,
@@ -169,7 +167,7 @@ class _DataCurationLinkState extends State<DataCurationLink> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => CurationDocx(data: docID, name: file+"-"+selectedItem+".docx - delimiter"),
+              builder: (context) => CurationDocx(data: docID, name: file+"-"+selectedItem+".docx"),
             ),
           );
           break;
@@ -209,13 +207,17 @@ class _DataCurationLinkState extends State<DataCurationLink> {
           showToast(message: "Failed to navigate!");
           break;
       }
-    }else{
+      setState(() {
+        isSuccess = false;
+      });
+    } else {
       setState(() {
         isSuccess = false;
       });
       showToast(message: response.statusCode.toString());
     }
   }
+
 
   void getPdf() async {
     final result = await store.collection("User_Documents").doc(auth.currentUser!.email).collection("Data_Curation").get();
@@ -258,6 +260,25 @@ class _DataCurationLinkState extends State<DataCurationLink> {
                     children: [
                       SizedBox(
                         height: 30.0,
+                      ),
+                      Row(
+                        children: [
+                          SizedBox(
+                            width: 50.0,
+                          ),
+                          Image(
+                            image: AssetImage('assets/logo.png'),
+                          ),
+                          SizedBox(
+                            width: 20.0,
+                          ),
+                          Image(
+                            image: AssetImage('assets/logo2.png'),
+                          ),
+                        ],
+                      ),
+                      SizedBox(
+                        height: 20.0,
                       ),
                       Text(
                         'Data Curation',
@@ -343,7 +364,7 @@ class _DataCurationLinkState extends State<DataCurationLink> {
                       ),
                       Center(
                           child: SizedBox(
-                            width: 150.0,
+                            width: 300.0,
                             child: DropdownButtonFormField<String>(
                               decoration: InputDecoration(
                                   enabledBorder: OutlineInputBorder(
@@ -366,8 +387,8 @@ class _DataCurationLinkState extends State<DataCurationLink> {
                       ),
                       GestureDetector(
                         onTap: (){
-                          if(inputFile == null){
-                            showToast(message: "Upload a document!");
+                          if(link == null){
+                            showToast(message: "Enter link!");
                           }else{
                             curateDocument();
                           }
@@ -395,7 +416,7 @@ class _DataCurationLinkState extends State<DataCurationLink> {
                         ),
                       ),
                       SizedBox(
-                        height: 40.0,
+                        height: 100.0,
                       )
                     ]
 
