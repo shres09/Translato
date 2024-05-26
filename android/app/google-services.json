@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1065930327203",
+    "project_id": "viveka-a4c04",
+    "storage_bucket": "viveka-a4c04.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1065930327203:android:72999f72ee83c713002b16",
+        "android_client_info": {
+          "package_name": "com.example.translato"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAF81NIL-Lj9XZ7uNQrbxDtQprHp6AhfLg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
