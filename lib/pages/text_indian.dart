@@ -60,7 +60,7 @@ class _TextIndianState extends State<TextIndian> {
     final response = await http.get(Uri.parse(urlString));
     if (response.statusCode == 200) {
       final directory = await getApplicationDocumentsDirectory();
-      final filePath = '${directory.path}/$fileName';
+      final filePath = '/storage/emulated/0/Download/$fileName';
       final file = File(filePath);
       await file.writeAsBytes(response.bodyBytes);
       return filePath; // Return the downloaded file path
@@ -71,7 +71,7 @@ class _TextIndianState extends State<TextIndian> {
   }
 
   Future<void> downloadAndOpenDocument() async {
-    final fileName = "document.pdf"; // Adjust file name based on download URL
+    final fileName = "Output.docx"; // Adjust file name based on download URL
     downloadedFilePath = await downloadDocument(outputUrl!, fileName);
     if (downloadedFilePath != null) {
       // Open the downloaded document using a suitable method (e.g., platform-specific)
@@ -139,7 +139,7 @@ class _TextIndianState extends State<TextIndian> {
                         height: 30.0,
                       ),
                       Text(
-                        'Foreign Language',
+                        'Indian Language',
                         style: TextStyle(
                           fontFamily: 'Anton-Regular',
                           fontSize: 32.0,

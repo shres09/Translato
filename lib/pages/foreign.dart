@@ -42,7 +42,7 @@ class _ForeignState extends State<Foreign> {
   var outputFile ;
   var downloadLink;
   var docID;
-  Uri api = Uri.parse("https://90ee-2401-4900-1cba-914b-95c4-8f23-b01b-8951.ngrok-free.app/translate/document/");
+  Uri api = Uri.parse("https://fb5c-2401-4900-1cba-ccf8-7d40-d06b-8238-4717.ngrok-free.app/translate/document/");
   Uri audio_api = Uri.parse("https://6fc7-35-197-140-189.ngrok-free.app/audio");
   Uri video_api = Uri.parse("https://6fc7-35-197-140-189.ngrok-free.app/video");
 
@@ -62,14 +62,16 @@ class _ForeignState extends State<Foreign> {
     );
     if(pickedFile != null) {
       fileName = pickedFile.files[0].name;
+      name = fileName;
       inputFile = io.File(pickedFile.files[0].path!);
       downloadLink = await uploadPdf(fileName, inputFile);
+      showToast(message: "Uploaded to firebase");
     }
     setState(() {});
   }
 
   void getPdf() async {
-    final result = await store.collection("User_Documents").doc(auth.currentUser!.email).collection("Data_Curation").get();
+    final result = await store.collection("User_Documents").doc(auth.currentUser!.email).collection("Foreign_Translation").get();
     pdfs = result.docs.map((e) => e.data()).toList();
     setState(() {});
   }

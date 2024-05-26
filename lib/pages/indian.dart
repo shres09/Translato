@@ -14,6 +14,7 @@ import 'package:translato/global/common/toast.dart';
 import 'package:translato/pages/audio_indian.dart';
 import 'package:translato/pages/feedback_page.dart';
 import 'package:translato/pages/text_indian.dart';
+import 'package:translato/pages/video_indian.dart';
 
 class Indian extends StatefulWidget {
   const Indian({super.key});
@@ -424,13 +425,20 @@ class _IndianState extends State<Indian> {
                       ),
                       GestureDetector(
                         onTap: (){
-                          if(selectedItem == ""){
+                          /*if(selectedItem == ""){
                             showToast(message: "Select a language!");
                           }else if(inputFile == null){
                             showToast(message: "Upload a document!");
                           }else{
                             translateDocument();
-                          }
+                          }*/
+                          docID = "doc1";
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => TextIndian(data: docID, name: "Output"+"-"+selectedItem+".docx"),
+                            ),
+                          );
                         },
                         child: Container(
                           height: 55.0,
@@ -458,13 +466,20 @@ class _IndianState extends State<Indian> {
                       ),
                       GestureDetector(
                         onTap: (){
-                          if(selectedItem == ""){
+                          /*if(selectedItem == ""){
                             showToast(message: "Select a language!");
                           }else if(inputFile == null){
                             showToast(message: "Upload a document!");
                           }else{
                             translateDocumentAudio();
-                          }
+                          }*/
+                          docID = "doc2";
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => AudioIndian(data: docID, name: "Output"+"-"+selectedItem+".mp3"),
+                            ),
+                          );
                         },
                         child: Container(
                           height: 55.0,
@@ -492,7 +507,13 @@ class _IndianState extends State<Indian> {
                       ),
                       GestureDetector(
                         onTap: (){
-                          Navigator.pushNamed(context, '/video_indian');
+                          docID = "doc3";
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => VideoIndian(data: docID, name: "Output"+"-"+selectedItem+".mp3"),
+                            ),
+                          );
                         },
                         child: Container(
                           height: 55.0,

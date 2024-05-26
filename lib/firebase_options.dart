@@ -53,11 +53,11 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyB9VgTwGNHHGYRmZSQvPaQcSCVoqWGd890',
-    appId: '1:925046371887:android:152769b41861469a4178da',
-    messagingSenderId: '925046371887',
-    projectId: 'translato-ac737',
-    storageBucket: 'translato-ac737.appspot.com',
+    apiKey: 'AIzaSyAF81NIL-Lj9XZ7uNQrbxDtQprHp6AhfLg',
+    appId: '1:1065930327203:android:72999f72ee83c713002b16',
+    messagingSenderId: '1065930327203',
+    projectId: 'viveka-a4c04',
+    storageBucket: 'viveka-a4c04.appspot.com',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(

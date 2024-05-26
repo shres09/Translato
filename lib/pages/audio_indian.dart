@@ -41,7 +41,7 @@ class _AudioIndianState extends State<AudioIndian> {
     try {
       final docRef = store.collection("User_Documents")
           .doc(auth.currentUser!.email)
-          .collection("Indian_Translation_Audio")
+          .collection("Indian_Translation")
           .doc(data);
       final docSnapshot = await docRef.get();
 
